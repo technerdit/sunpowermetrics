@@ -40,12 +40,12 @@ if __name__ == "__main__":
     starttime = datetime.datetime.now() - datetime.timedelta(hours=1)
     endtime = datetime.datetime.now()
     power = SunPowerAPI(fqdn="https://edp-api-graphql.edp.sunpower.com",
-                        username="dayhkr@gmail.com",
-                        password="PL98et7117u25!",
+                        username="",
+                        password="",
                         token=data)
 
     solarquery = {"operationName": "FetchPowerData",
-                  "variables": {"siteKey": "A_311367",
+                  "variables": {"siteKey": "x_xxxxxx",
                                 "interval": "five_minute",
                                 "end": "{}".format(endtime.strftime("%Y-%m-%dT%H:%M:%S")),
                                 "start": "{}".format(starttime.strftime("%Y-%m-%dT%H:%M:%S"))

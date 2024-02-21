@@ -18,11 +18,13 @@ class InfluxDb(object):
         res = write_api.write(bucket=self.bucket, org=self.org, record=p)
         return res
 
-    def readdata(self, query=None):
+    def readdata(self, **query):
         query_api = self.client.query_api()
-        query = 'from(bucket:"solarmetrics")\
-        |> range(start: -1d)\
-        |> filter(fn:(r) => r._measurement == "production")'
+        query = 'from(bucket:"{}")\
+        |> range(start: {})\
+        |> filter(fn:(r) => r._measurement == "{}")'.format(query['bucket'],
+                                                                    query['range'],
+                                                                    query['measurement'])
         result = query_api.query(org=self.org,
                                  query=query)
         results = []
@@ -34,14 +36,15 @@ class InfluxDb(object):
 
 
 if __name__ == "__main__":
-    influx = InfluxDb(influxdb="http://192.168.1.4:8086",
-                      bucket="solarmetrics",
-                      org="digital-domain",
-                      token="VjI-pp2b8M2D9JTEqZUwzOLvgcNmMX0TOYe9tF6AdpoPoAAxyt_wpM53bNwEVW5htU8e-cOv19jMaueif0iYyw==")
-    res = influx.writedata(measurement_name="production",
-                           tag='"system" , "solar"',
-                           metric=0.10,
-                           timestamp="2024-02-20T14:19:00-07:00")
-    print(res)
+    influx = InfluxDb(influxdb="",
+                      bucket="",
+                      org="",
+                      token="")
+    influx.writedata(measurement_name="production",
+                     tag='"system" , "solar"',
+                     metric=0.10,
+                     timestamp="2024-02-20T14:19:00-07:00")
 
-    #influx.readdata()
+    influx.readdata(bucket="solarmetrics",
+                    range=-1,
+                    measurement="production")

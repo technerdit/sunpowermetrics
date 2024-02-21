@@ -1,23 +1,24 @@
 from sunpowermetrics.apimetrics import SunPowerAPI
 import datetime as datetime
 from datastores.influxdb import InfluxDb
+import config
 import json
 
 
 def main():
-    fh = open('/opt/sunpowerapi/.token', 'r')
+    fh = open(config.sunpower_token_file, 'r')
     token = fh.read()
     starttime = datetime.datetime.now() - datetime.timedelta(hours=1)
     endtime = datetime.datetime.now()
-    influx = InfluxDb(influxdb="http://192.168.1.4:8086",
-                      bucket="solarmetrics",
-                      org="digital-domain",
-                      token="VjI-pp2b8M2D9JTEqZUwzOLvgcNmMX0TOYe9tF6AdpoPoAAxyt_wpM53bNwEVW5htU8e-cOv19jMaueif0iYyw==")
-    lg = open('/var/log/sunpower/metrics.log', 'a')
-    power = SunPowerAPI(fqdn="https://edp-api-graphql.edp.sunpower.com",
+    influx = InfluxDb(influxdb=config.db_url,
+                      bucket=config.db_bucket,
+                      org=config.db_org,
+                      token=config.db_token)
+    lg = open(config.metrics_log_location, 'a')
+    power = SunPowerAPI(fqdn=config.sunpower_api_url,
                         token=token)
     solarquery = {"operationName": "FetchPowerData",
-                  "variables": {"siteKey": "A_311367",
+                  "variables": {"siteKey": config.sunpower_site_id,
                                 "interval": "five_minute",
                                 "end": "{}".format(endtime.strftime("%Y-%m-%dT%H:%M:%S")),
                                 "start": "{}".format(starttime.strftime("%Y-%m-%dT%H:%M:%S"))

@@ -4,8 +4,6 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 class InfluxDb(object):
     def __init__(self, **influx):
-        # self.dbuser = influx['dbuser']
-        # self.dbpass = influx['dbpass']
         self.bucket = influx['bucket']
         self.org = influx['org']
         self.client = influxdb_client.InfluxDBClient(url=influx['influxdb'],
@@ -18,6 +16,7 @@ class InfluxDb(object):
         res = write_api.write(bucket=self.bucket, org=self.org, record=p)
         return res
 
+# Added a read data function may update this later to be more usable
     def readdata(self, **query):
         query_api = self.client.query_api()
         query = 'from(bucket:"{}")\
@@ -36,6 +35,7 @@ class InfluxDb(object):
 
 
 if __name__ == "__main__":
+    # Example of how to use this package
     influx = InfluxDb(influxdb="",
                       bucket="",
                       org="",

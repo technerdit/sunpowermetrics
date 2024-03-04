@@ -2,6 +2,7 @@ import datetime as datetime
 import requests
 import json
 from sunpowerauth.sunpowerauth import SunPowerAuth
+import config
 
 
 class SunPowerAPI(object):
@@ -14,22 +15,34 @@ class SunPowerAPI(object):
 
     def getmetrics(self, query=None, token=None):
         self.headers['authorization'] = "Bearer {}".format(token)
+        print(self.headers)
         url = self.baseUrl + "/graphql"
-        results = self.session.post(url, headers=self.headers, data=json.dumps(query))
-        jsondata = results.json()
-        if 'errors' in jsondata:
-            for error in jsondata['errors']:
-                if error['extensions']['code'] == "UNAUTHENTICATED":
-                    print("Bad Token getting a new one")
-                    token = self.spa.gettoken()
-                    self.headers['authorization'] = "Bearer {}".format(token)
-                    print("Updating headers {}".format(self.headers))
-                    print("Trying again for metrics")
-                    results = self.session.post(url, headers=self.headers, data=json.dumps(query))
-                    return results.json()
-        else:
-            if results.status_code == 200:
-                return results.json()
+        try:
+            results = self.session.post(url, headers=self.headers, data=json.dumps(query))
+            jsondata = results.json()
+            print(jsondata)
+            if 'errors' in jsondata:
+                print("found errors")
+                for error in jsondata['errors']:
+                    if error['extensions']['code'] == "UNAUTHENTICATED":
+                        print("Bad Token getting a new one")
+                        token = self.spa.gettoken()
+                        self.headers['authorization'] = "Bearer {}".format(token)
+                        print("Updating headers {}".format(self.headers))
+                        print("Trying again for metrics")
+                        results = self.session.post(url, headers=self.headers, data=json.dumps(query))
+                        return results.json()
+                    else:
+                        self.__gtfylogger(message=f"Sunpower Metrics - Error {jsondata['errors']}",
+                              title="SunpowerMetrics Script Error!")
+                        print(f"Errors: {jsondata['errors']}")
+            else:
+                if results.status_code == 200:
+                    return jsondata
+
+        except Exception as e:
+            self.__gtfylogger(message=f"Sunpower Metrics - Error {e}",
+                              title="SunpowerMetrics Script Error!")
 
     def parsedata(self, data=None):
         metricsdict = {}
@@ -44,6 +57,14 @@ class SunPowerAPI(object):
                                  "totalGridImport": data['data']['energy']['totalGridImport'],
                                  "totalGridExport": data['data']['energy']['totalGridExport']}
         return metricsdict
+
+    def __gtfylogger(self, **data):
+        data = {"action": "sndmsg",
+                "msg": data['message'],
+                "title": data['title'],
+                "priority": 1}
+        res = self.session.post(config.gotfiy_server, headers={"Content-Type": "application/json"}, data=data)
+        return res.json()
 
 
 if __name__ == "__main__":

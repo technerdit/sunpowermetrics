@@ -2,7 +2,6 @@ from sunpowermetrics.apimetrics import SunPowerAPI
 import datetime as datetime
 from datastores.influxdb import InfluxDb
 import config
-import logging
 import time
 from sunpowerauth.sunpowerauth import SunPowerAuth
 

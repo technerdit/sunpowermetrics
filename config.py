@@ -15,4 +15,8 @@ sunpower_password = <SUNPOWER PASSWORD>
 
 # Metrics Application Settings
 
-metrics_log_location = "/var/log/sunpower/metrics.log" # Syslog file
+metrics_log_location = "<SYSLOG LOG FILE>" # Syslog file
+
+#Gotify logging endpoint
+
+gotfiy_server = "<GOTIFY ENDPOINT>"

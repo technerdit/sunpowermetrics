@@ -32,19 +32,3 @@ class InfluxDb(object):
             for record in table.records:
                 results.append((record.get_field(), record.get_value()))
         print(results)
-
-
-if __name__ == "__main__":
-    # Example of how to use this package
-    influx = InfluxDb(influxdb="",
-                      bucket="",
-                      org="",
-                      token="")
-    influx.writedata(measurement_name="production",
-                     tag='"system" , "solar"',
-                     metric=0.10,
-                     timestamp="2024-02-20T14:19:00-07:00")
-
-    influx.readdata(bucket="solarmetrics",
-                    range=-1,
-                    measurement="production")

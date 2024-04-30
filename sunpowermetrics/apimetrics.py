@@ -15,12 +15,12 @@ class SunPowerAPI(object):
 
     def getmetrics(self, query=None, token=None):
         self.headers['authorization'] = "Bearer {}".format(token)
-        print(self.headers)
         url = self.baseUrl + "/graphql"
         try:
-            results = self.session.post(url, headers=self.headers, data=json.dumps(query))
+            results = self.session.post(url,
+                                        headers=self.headers,
+                                        data=json.dumps(query))
             jsondata = results.json()
-            print(jsondata)
             if 'errors' in jsondata:
                 print("found errors")
                 for error in jsondata['errors']:
@@ -28,10 +28,16 @@ class SunPowerAPI(object):
                         print("Bad Token getting a new one")
                         token = self.spa.gettoken()
                         self.headers['authorization'] = "Bearer {}".format(token)
-                        print("Updating headers {}".format(self.headers))
-                        print("Trying again for metrics")
-                        results = self.session.post(url, headers=self.headers, data=json.dumps(query))
-                        return results.json()
+                        print("Re-trying again for metrics")
+                        try:
+                            results = self.session.post(url,
+                                                        headers=self.headers,
+                                                        data=json.dumps(query))
+                            return results.json()
+                        except:
+                            print("Failed to retrieve Data")
+                            self.__gtfylogger(message=f"Sunpower Metrics - Error Failed to get data",
+                                              title="SunpowerMetrics Script Error!")
                     else:
                         self.__gtfylogger(message=f"Sunpower Metrics - Error {jsondata['errors']}",
                               title="SunpowerMetrics Script Error!")
@@ -46,17 +52,21 @@ class SunPowerAPI(object):
 
     def parsedata(self, data=None):
         metricsdict = {}
-        metricsdict['production'] = {}
-        for line in data['data']['energy']['energyDataSeries']['production']:
-            metricsdict['production'][line[0]] = {"kwh": line[1]}
-        metricsdict['consumption'] = {}
-        for line in data['data']['energy']['energyDataSeries']['consumption']:
-            metricsdict['consumption'][line[0]] = {"kwh": line[1]}
-        metricsdict['totals'] = {"totalProduction": data['data']['energy']['totalProduction'],
-                                 "totalConsumption": data['data']['energy']['totalConsumption'],
-                                 "totalGridImport": data['data']['energy']['totalGridImport'],
-                                 "totalGridExport": data['data']['energy']['totalGridExport']}
-        return metricsdict
+        if data:
+            metricsdict['production'] = {}
+            for line in data['data']['energy']['energyDataSeries']['production']:
+                metricsdict['production'][line[0]] = {"kwh": line[1]}
+            metricsdict['consumption'] = {}
+            for line in data['data']['energy']['energyDataSeries']['consumption']:
+                metricsdict['consumption'][line[0]] = {"kwh": line[1]}
+            metricsdict['totals'] = {"totalProduction": data['data']['energy']['totalProduction'],
+                                     "totalConsumption": data['data']['energy']['totalConsumption'],
+                                     "totalGridImport": data['data']['energy']['totalGridImport'],
+                                     "totalGridExport": data['data']['energy']['totalGridExport']}
+            return metricsdict
+        else:
+            print("No Data")
+            return
 
     def __gtfylogger(self, **data):
         data = {"action": "sndmsg",

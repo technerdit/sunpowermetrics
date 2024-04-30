@@ -53,4 +53,4 @@ Data points include:
 
 ## License
 
-**[TODO: Add license information here]**
+Distributed under the MIT License. See `LICENSE.txt` for more information.
